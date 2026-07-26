@@ -103,6 +103,29 @@ rb2traktor --traktor ".../collection.nml" --rb-xml export.xml --no-grids
    *File → Import Collection* against the merge file.
 4. Reopen Traktor; verify cues and grids.
 
+## Also: Traktor → Mixxx (hot cues + playlists)
+
+Migrate your Traktor hot cues (positions, colors, labels) and playlists into
+[Mixxx](https://mixxx.org). Mixxx's library is a plain SQLite database, so this
+writes directly into a **safe copy** of it — your live `mixxxdb.sqlite` is never
+touched.
+
+```bash
+# Dry run: report what would migrate, write nothing
+rb2traktor-mixxx --dry-run
+
+# Migrate into a copy (mixxxdb-merged.sqlite next to your live DB)
+rb2traktor-mixxx                     # auto-detects Traktor collection + Mixxx DB
+rb2traktor-mixxx --no-memory         # skip Traktor memory cues
+rb2traktor-mixxx --no-playlists      # cues only
+```
+
+First **add your music to Mixxx** (so tracks exist to attach cues to). Then, to
+apply: **close Mixxx**, back up `mixxxdb.sqlite`, and rename the merge file over
+it. Notes: Traktor hot cues become Mixxx hotcues (memory cues fill spare slots);
+beatgrids aren't migrated (Mixxx uses a different mechanism); positions use
+Mixxx's exact `seconds × samplerate × 2` sample convention.
+
 ## How it works
 
 ```
@@ -125,13 +148,15 @@ path named `collection.nml` (`safe_output.assert_not_live`).
 .venv\Scripts\python scripts/verify_e2e.py          # real-data end-to-end (read-only on live file)
 ```
 
-## Scope (v1)
+## Scope
 
-In: hot/memory cues, beatgrids/BPM, playlists, RB→Traktor one-way.
-Out: loops, ratings/key/comments, writing back to Rekordbox, adding new tracks to
-Traktor (unmatched RB tracks are reported, not inserted), auto-sync daemon.
+- **Rekordbox → Traktor:** hot/memory cues, beatgrids/BPM, playlists (GUI + CLI).
+- **Traktor → Mixxx:** hot cues (+ memory cues) and playlists (CLI: `rb2traktor-mixxx`).
+- Out: loops, ratings/key/comments, writing back to Rekordbox, Mixxx beatgrids,
+  adding new tracks (unmatched tracks are reported, not inserted), auto-sync daemon.
 
 ## Credits
 
 - [pyrekordbox](https://github.com/dylanljones/pyrekordbox) — master.db / ANLZ access
 - Rekordbox cue color palette from [Deep-Symmetry/beat-link #51](https://github.com/Deep-Symmetry/beat-link/issues/51)
+- Mixxx cue format from [mixxxdj/mixxx PR #1411](https://github.com/mixxxdj/mixxx/pull/1411) (Traktor cue import)

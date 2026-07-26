@@ -20,6 +20,7 @@ dev = [
 [project.scripts]
 rb2traktor = "rb2traktor.cli:main"
 rb2traktor-gui = "rb2traktor.gui.app:main"
+rb2traktor-mixxx = "rb2traktor.cli_mixxx:main"
 
 [build-system]
 requires = ["setuptools>=68"]

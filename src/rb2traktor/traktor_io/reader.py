@@ -18,7 +18,7 @@ from typing import Optional
 
 from lxml import etree
 
-from ..models import Cue, CueKind, TraktorEntry
+from ..models import Cue, CueKind, TraktorEntry, TraktorPlaylist
 from ..matcher import paths
 
 # Traktor CUE_V2 TYPE values
@@ -123,6 +123,11 @@ def _entry_to_model(entry_el: etree._Element) -> TraktorEntry:
         if c is not None:
             cues.append(c)
 
+    # Traktor's playlist entries reference tracks by this key: VOLUME + DIR + FILE.
+    traktor_key = ""
+    if loc is not None:
+        traktor_key = f'{loc.get("VOLUME", "")}{loc.get("DIR", "")}{loc.get("FILE", "")}'
+
     return TraktorEntry(
         file_path=file_path,
         title=entry_el.get("TITLE", "") or "",
@@ -132,6 +137,7 @@ def _entry_to_model(entry_el: etree._Element) -> TraktorEntry:
         file_size=file_size,
         cues=cues,
         has_beatgrid=has_grid,
+        traktor_key=traktor_key,
         raw=entry_el,
     )
 
@@ -157,6 +163,44 @@ class TraktorCollection:
     def entries(self) -> list[TraktorEntry]:
         return [_entry_to_model(e) for e in self.entry_elements()]
 
+    def playlists(self) -> list["TraktorPlaylist"]:
+        """Read the PLAYLISTS tree (folders + playlists of track keys).
+
+        Traktor nests folders (NODE TYPE="FOLDER" with SUBNODES) and playlists
+        (NODE TYPE="PLAYLIST" with a PLAYLIST of ENTRY/PRIMARYKEY KEY). Each leaf
+        playlist's track keys are Traktor's VOLUME+DIR+FILE strings, matching
+        ``TraktorEntry.traktor_key``.
+        """
+        pl_root = self._root.find("PLAYLISTS")
+        if pl_root is None:
+            return []
+        root_node = pl_root.find("NODE")
+        if root_node is None:
+            return []
+        sub = root_node.find("SUBNODES")
+        if sub is None:
+            return []
+        return [_playlist_node(n) for n in sub.findall("NODE")]
+
     @classmethod
     def load(cls, source_path: str | Path) -> "TraktorCollection":
         return cls(source_path)
+
+
+def _playlist_node(node: etree._Element) -> "TraktorPlaylist":
+    name = node.get("NAME", "") or ""
+    if node.get("TYPE") == "FOLDER":
+        sub = node.find("SUBNODES")
+        children = [_playlist_node(n) for n in sub.findall("NODE")] if sub is not None else []
+        return TraktorPlaylist(name=name, is_folder=True, children=children)
+    # leaf playlist
+    keys: list[str] = []
+    pl = node.find("PLAYLIST")
+    if pl is not None:
+        for entry in pl.findall("ENTRY"):
+            pk = entry.find("PRIMARYKEY")
+            if pk is not None and pk.get("TYPE") == "TRACK":
+                key = pk.get("KEY")
+                if key:
+                    keys.append(key)
+    return TraktorPlaylist(name=name, is_folder=False, track_keys=keys)
