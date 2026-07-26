@@ -13,3 +13,5 @@ scratch/
 collection-merge*.nml
 master.db
 rekordbox.xml
+mixxxdb.sqlite
+mixxxdb-merged*.sqlite
