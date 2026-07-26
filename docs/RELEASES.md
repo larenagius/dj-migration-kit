@@ -4,16 +4,16 @@ A built release is a folder + a zip:
 
 ```
 <releases-dir>\
-  rb2traktor-<version>\          # the runnable app folder (rb2traktor.exe + _internal\)
-  rb2traktor-<version>.zip       # zipped copy for distribution / backup
+  djmigrationkit-<version>\          # the runnable app folder (djmigrationkit.exe + _internal\)
+  djmigrationkit-<version>.zip       # zipped copy for distribution / backup
 ```
 
-`<releases-dir>` is wherever you publish (set `RB2T_RELEASES`, else `<repo>\releases`).
+`<releases-dir>` is wherever you publish (set `DJMK_RELEASES`, else `<repo>\releases`).
 `<version>` matches `project.version` in `pyproject.toml` (currently `0.1.0`).
 
 ## Running a release
 
-Open `<releases-dir>\rb2traktor-<version>\` and double-click `rb2traktor.exe`.
+Open `<releases-dir>\djmigrationkit-<version>\` and double-click `djmigrationkit.exe`.
 Keep the whole folder together — the exe loads its `_internal\` siblings.
 
 > **Cold-start note:** the app is ~170 MB of DLLs. If the release folder is on a
@@ -54,8 +54,8 @@ You can still build a Windows release locally without CI:
 2. (Optional) Point the script at your machine's locations via env vars:
 
 ```powershell
-$env:RB2T_PYTHON   = "C:\path\to\venv\Scripts\python.exe"   # else uses <repo>\.venv or PATH
-$env:RB2T_RELEASES = "Y:\some\releases"                      # else uses <repo>\releases
+$env:DJMK_PYTHON   = "C:\path\to\venv\Scripts\python.exe"   # else uses <repo>\.venv or PATH
+$env:DJMK_RELEASES = "Y:\some\releases"                      # else uses <repo>\releases
 ```
 
 3. Run the one-command release script:
@@ -66,7 +66,7 @@ $env:RB2T_RELEASES = "Y:\some\releases"                      # else uses <repo>\
 
 It reads the version, runs the test suite (gate), builds the PyInstaller bundle on
 **local disk** (building onto a network share trips SMB file locks), zips it, and
-publishes the app folder + zip to `<releases-dir>\rb2traktor-<version>\`. Flags:
+publishes the app folder + zip to `<releases-dir>\djmigrationkit-<version>\`. Flags:
 
 - `-Force` — overwrite an existing release of the same version.
 - `-SkipTests` — skip the pytest gate (not recommended).

@@ -1,7 +1,7 @@
 from lxml import etree
 
-from rb2traktor.models import Cue, CueKind
-from rb2traktor.mapping import cues as cue_map
+from djmigrationkit.models import Cue, CueKind
+from djmigrationkit.mapping import cues as cue_map
 
 
 def test_hot_cue_element_attributes():

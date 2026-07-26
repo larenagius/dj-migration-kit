@@ -134,7 +134,7 @@ def autodetect_traktor() -> str:
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("rb2traktor — Rekordbox → Traktor metadata merge")
+        self.setWindowTitle("djmigrationkit — Rekordbox → Traktor metadata merge")
         self.resize(1150, 720)
         self._plan = None
         self._thread = None

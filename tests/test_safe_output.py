@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-from rb2traktor.traktor_io import safe_output as so
+from djmigrationkit.traktor_io import safe_output as so
 
 
 def test_refuses_live_filename(tmp_path):

@@ -6,9 +6,9 @@ from pathlib import Path
 
 import pytest
 
-from rb2traktor.mapping import mixxx_cues
-from rb2traktor.mixxx_io import db as mdb
-from rb2traktor.mixxx_io.migrate import build_plan, migrate
+from djmigrationkit.mapping import mixxx_cues
+from djmigrationkit.mixxx_io import db as mdb
+from djmigrationkit.mixxx_io.migrate import build_plan, migrate
 
 FIX = Path(__file__).parent / "fixtures" / "collection_mixxx.nml"
 

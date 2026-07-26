@@ -1,4 +1,4 @@
-from rb2traktor.matcher import paths
+from djmigrationkit.matcher import paths
 
 
 def test_traktor_location_windows():

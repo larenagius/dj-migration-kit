@@ -9,12 +9,12 @@ os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
 pytest.importorskip("PySide6")
 
-from rb2traktor.matcher import TrackMatcher  # noqa: E402
-from rb2traktor.models import (  # noqa: E402
+from djmigrationkit.matcher import TrackMatcher  # noqa: E402
+from djmigrationkit.models import (  # noqa: E402
     BeatGrid, BeatMarker, ChangeType, Cue, CueKind, RbPlaylist, RbTrack, Resolution,
 )
-from rb2traktor.sync import engine  # noqa: E402
-from rb2traktor.traktor_io.reader import TraktorCollection  # noqa: E402
+from djmigrationkit.sync import engine  # noqa: E402
+from djmigrationkit.traktor_io.reader import TraktorCollection  # noqa: E402
 
 FIXTURE = Path(__file__).parent / "fixtures" / "collection.nml"
 
@@ -49,7 +49,7 @@ def _plan():
 
 
 def test_table_model_rows_and_filter(qapp):
-    from rb2traktor.gui.track_model import TrackTableModel, TrackFilterProxy
+    from djmigrationkit.gui.track_model import TrackTableModel, TrackFilterProxy
     plan = _plan()
     model = TrackTableModel(plan)
     assert model.rowCount() == 3
@@ -63,7 +63,7 @@ def test_table_model_rows_and_filter(qapp):
 
 def test_header_sorting_by_title(qapp):
     from PySide6.QtCore import Qt
-    from rb2traktor.gui.track_model import TrackTableModel, TrackFilterProxy
+    from djmigrationkit.gui.track_model import TrackTableModel, TrackFilterProxy
     plan = _plan()
     model = TrackTableModel(plan)
     proxy = TrackFilterProxy(); proxy.setSourceModel(model)
@@ -79,7 +79,7 @@ def test_header_sorting_by_title(qapp):
 
 
 def test_bulk_and_single_resolution(qapp):
-    from rb2traktor.gui.track_model import TrackTableModel
+    from djmigrationkit.gui.track_model import TrackTableModel
     plan = _plan()
     model = TrackTableModel(plan)
     model.set_resolution_bulk(Resolution.TRAKTOR_WINS, only_conflicts=False)
@@ -90,7 +90,7 @@ def test_bulk_and_single_resolution(qapp):
 
 
 def test_grid_resolution_independent_of_cues(qapp):
-    from rb2traktor.gui.track_model import TrackTableModel
+    from djmigrationkit.gui.track_model import TrackTableModel
     plan = _plan()
     model = TrackTableModel(plan)
     # bulk grids to Traktor; cue resolution must stay default RB_WINS
@@ -104,7 +104,7 @@ def test_grid_resolution_independent_of_cues(qapp):
 
 
 def test_mainwindow_constructs_and_loads_plan(qapp):
-    from rb2traktor.gui.app import MainWindow
+    from djmigrationkit.gui.app import MainWindow
     win = MainWindow()
     win.model.set_plan(_plan())
     win._plan = _plan()
@@ -116,7 +116,7 @@ def test_mainwindow_constructs_and_loads_plan(qapp):
 
 
 def test_select_track_populates_detail_including_grid(qapp):
-    from rb2traktor.gui.app import MainWindow
+    from djmigrationkit.gui.app import MainWindow
     win = MainWindow()
     plan = _plan()
     win._plan = plan

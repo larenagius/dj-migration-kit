@@ -1,6 +1,6 @@
 """Qt table model exposing a SyncPlan's track changes.
 
-Separate from the domain models in rb2traktor.models -- this is the view-model the
+Separate from the domain models in djmigrationkit.models -- this is the view-model the
 QTableView renders. It also owns per-row filtering and resolution edits.
 """
 

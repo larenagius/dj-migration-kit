@@ -2,10 +2,10 @@
 
 Examples:
     # Dry run: read both libraries, print what would change, write nothing.
-    rb2traktor --traktor "C:/.../collection.nml" --dry-run
+    djmigrationkit --traktor "C:/.../collection.nml" --dry-run
 
     # Produce collection-merge.nml next to the Traktor collection.
-    rb2traktor --traktor "C:/.../collection.nml" --rb-xml export.xml
+    djmigrationkit --traktor "C:/.../collection.nml" --rb-xml export.xml
 
 By default the Rekordbox source is the local master.db (auto-detected). Pass
 --rb-xml to use an exported rekordbox.xml instead. The live collection.nml is
@@ -72,7 +72,7 @@ def print_report(plan):
 
 
 def main(argv=None):
-    ap = argparse.ArgumentParser(prog="rb2traktor", description=__doc__)
+    ap = argparse.ArgumentParser(prog="djmigrationkit", description=__doc__)
     ap.add_argument("--traktor", required=True, help="Path to live collection.nml (read-only)")
     ap.add_argument("--rb-xml", help="Path to exported rekordbox.xml (else use master.db)")
     ap.add_argument("--rb-key", help="SQLCipher key override for master.db")

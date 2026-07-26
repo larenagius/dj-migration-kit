@@ -1,5 +1,5 @@
-from rb2traktor.models import Cue, CueKind, Resolution
-from rb2traktor.sync import conflicts
+from djmigrationkit.models import Cue, CueKind, Resolution
+from djmigrationkit.sync import conflicts
 
 
 def hot(i, pos, name="", color=None):

@@ -1,4 +1,4 @@
-# Working on rb2traktor
+# Working on djmigrationkit
 
 `main` is the stable branch — it should always be releasable. **No direct commits
 to `main`.** All changes land via a short-lived branch that has passed tests.
@@ -15,7 +15,7 @@ git checkout -b feat/cue-color-picker        # or fix/..., chore/..., docs/...
 
 # 3. Make changes, then TEST (the gate — must pass)
 $env:QT_QPA_PLATFORM = "offscreen"; $env:PYTHONPATH = "src"
-.venv\Scripts\python.exe -m pytest      # or your venv's python ($env:RB2T_PYTHON)
+.venv\Scripts\python.exe -m pytest      # or your venv's python ($env:DJMK_PYTHON)
 
 # 4. Commit + push the branch
 git add -A

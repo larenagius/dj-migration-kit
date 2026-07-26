@@ -1,20 +1,20 @@
 <#
 .SYNOPSIS
-    Build the rb2traktor GUI and publish a versioned release.
+    Build the DJ Migration Kit GUI and publish a versioned release.
 
 .DESCRIPTION
     One-command build + publish. Reads the version from pyproject.toml, runs the
     test suite (gate), builds the PyInstaller bundle on LOCAL disk (building onto a
     network share trips SMB file locks), zips it, then copies the app folder and
-    zip to <ReleasesRoot>\rb2traktor-<version>\.
+    zip to <ReleasesRoot>\djmigrationkit-<version>\.
 
     Run from anywhere; the script locates the repo from its own path.
 
 .PARAMETER ReleasesRoot
-    Where releases are published. Default: $env:RB2T_RELEASES, else <repo>\releases.
+    Where releases are published. Default: $env:DJMK_RELEASES, else <repo>\releases.
 
 .PARAMETER Python
-    python.exe used to build/test. Default: $env:RB2T_PYTHON, else <repo>\.venv,
+    python.exe used to build/test. Default: $env:DJMK_PYTHON, else <repo>\.venv,
     else 'python' on PATH.
 
 .PARAMETER SkipTests
@@ -25,8 +25,8 @@
 
 .EXAMPLE
     # Set your machine's locations once (e.g. in your PowerShell profile):
-    $env:RB2T_PYTHON   = "C:\path\to\venv\Scripts\python.exe"
-    $env:RB2T_RELEASES = "Y:\some\releases"
+    $env:DJMK_PYTHON   = "C:\path\to\venv\Scripts\python.exe"
+    $env:DJMK_RELEASES = "Y:\some\releases"
     .\scripts\release.ps1
 .EXAMPLE
     .\scripts\release.ps1 -ReleasesRoot D:\out -Force
@@ -35,8 +35,8 @@
 param(
     # Defaults come from env vars; if unset they're resolved below to neutral,
     # machine-independent locations so this script ships clean in a public repo.
-    [string]$ReleasesRoot = $env:RB2T_RELEASES,
-    [string]$Python = $env:RB2T_PYTHON,
+    [string]$ReleasesRoot = $env:DJMK_RELEASES,
+    [string]$Python = $env:DJMK_PYTHON,
     [switch]$SkipTests,
     [switch]$Force
 )
@@ -63,20 +63,20 @@ function Invoke-Native {
 
 # --- locate repo + tools ---------------------------------------------------- #
 $RepoRoot = Split-Path $PSScriptRoot -Parent
-$Spec     = Join-Path $RepoRoot "packaging\rb2traktor.spec"
+$Spec     = Join-Path $RepoRoot "packaging\djmigrationkit.spec"
 $PyProj   = Join-Path $RepoRoot "pyproject.toml"
 if (-not (Test-Path $Spec)) { Fail "Spec not found: $Spec" }
 
-# Resolve Python: -Python / $RB2T_PYTHON, else a repo-local .venv, else PATH.
+# Resolve Python: -Python / $DJMK_PYTHON, else a repo-local .venv, else PATH.
 if (-not $Python) {
     $venvPy = Join-Path $RepoRoot ".venv\Scripts\python.exe"
     $Python = if (Test-Path $venvPy) { $venvPy } else { "python" }
 }
 $resolved = Get-Command $Python -ErrorAction SilentlyContinue
 if ($resolved) { $Python = $resolved.Source }
-if (-not (Test-Path $Python)) { Fail "Python not found: '$Python' (set RB2T_PYTHON or create a .venv)" }
+if (-not (Test-Path $Python)) { Fail "Python not found: '$Python' (set DJMK_PYTHON or create a .venv)" }
 
-# Resolve releases root: -ReleasesRoot / $RB2T_RELEASES, else repo-local releases\.
+# Resolve releases root: -ReleasesRoot / $DJMK_RELEASES, else repo-local releases\.
 if (-not $ReleasesRoot) { $ReleasesRoot = Join-Path $RepoRoot "releases" }
 
 # pyinstaller next to python, else on PATH.
@@ -91,18 +91,18 @@ if (-not (Test-Path $PyInstaller)) {
 $verMatch = Select-String -Path $PyProj -Pattern '^\s*version\s*=\s*"([^"]+)"' | Select-Object -First 1
 if (-not $verMatch) { Fail "Could not read version from $PyProj" }
 $Version = $verMatch.Matches[0].Groups[1].Value
-Write-Host "rb2traktor release v$Version" -ForegroundColor Green
+Write-Host "DJ Migration Kit release v$Version" -ForegroundColor Green
 
-$DestFolder = Join-Path $ReleasesRoot "rb2traktor-$Version"
-$DestZip    = Join-Path $ReleasesRoot "rb2traktor-$Version.zip"
+$DestFolder = Join-Path $ReleasesRoot "dj-migration-kit-$Version"
+$DestZip    = Join-Path $ReleasesRoot "dj-migration-kit-$Version.zip"
 if ((Test-Path $DestFolder) -and -not $Force) {
     Fail "Release already exists: $DestFolder  (bump version in pyproject.toml, or pass -Force)"
 }
 
 # --- local working dirs (never build on the NAS) ---------------------------- #
-$Work  = Join-Path $env:TEMP "rb2t-build"
-$Dist  = Join-Path $env:TEMP "rb2t-dist"
-$Stage = Join-Path $env:TEMP "rb2t-stage\rb2traktor-$Version"
+$Work  = Join-Path $env:TEMP "djmk-build"
+$Dist  = Join-Path $env:TEMP "djmk-dist"
+$Stage = Join-Path $env:TEMP "djmk-stage\dj-migration-kit-$Version"
 foreach ($d in @($Work, $Dist, (Split-Path $Stage -Parent))) {
     if (Test-Path $d) { Remove-Item $d -Recurse -Force }
 }
@@ -124,8 +124,8 @@ if (-not $SkipTests) {
 Step "Building (PyInstaller, local disk)"
 $code = Invoke-Native $PyInstaller @($Spec, "--distpath", $Dist, "--workpath", $Work, "--noconfirm") -Quiet
 if ($code -ne 0) { Fail "PyInstaller build failed (exit $code)." }
-$BuiltApp = Join-Path $Dist "rb2traktor"
-if (-not (Test-Path (Join-Path $BuiltApp "rb2traktor.exe"))) { Fail "Build produced no rb2traktor.exe" }
+$BuiltApp = Join-Path $Dist "DJMigrationKit"
+if (-not (Test-Path (Join-Path $BuiltApp "DJMigrationKit.exe"))) { Fail "Build produced no DJMigrationKit.exe" }
 
 # --- 3. stage + readme + zip (local) ---------------------------------------- #
 Step "Staging + zipping"
@@ -133,13 +133,13 @@ New-Item -ItemType Directory -Force (Split-Path $Stage -Parent) | Out-Null
 $code = Invoke-Native "robocopy" @($BuiltApp, $Stage, "/E", "/R:1", "/W:2", "/NFL", "/NDL", "/NJH", "/NJS", "/NP") -Quiet
 if ($code -ge 8) { Fail "robocopy stage failed (exit $code)" }
 @"
-rb2traktor $Version - Rekordbox -> Traktor 4 metadata merge
-Run: double-click rb2traktor.exe (keep this whole folder together).
-Source & docs: https://github.com/larenagius/rekordbox-to-traktor
-Your live collection.nml is NEVER modified; output is collection-merge.nml.
+DJ Migration Kit $Version - sync cues/playlists between Traktor, Rekordbox and Mixxx
+Run: double-click DJMigrationKit.exe (keep this whole folder together).
+Source & docs: https://github.com/larenagius/dj-migration-kit
+Your live libraries are NEVER modified; output is a separate merge file you swap in.
 "@ | Set-Content -Encoding UTF8 (Join-Path $Stage "READ ME FIRST.txt")
 
-$LocalZip = Join-Path $env:TEMP "rb2t-stage\rb2traktor-$Version.zip"
+$LocalZip = Join-Path $env:TEMP "djmk-stage\dj-migration-kit-$Version.zip"
 if (Test-Path $LocalZip) { Remove-Item $LocalZip -Force }
 Compress-Archive -Path $Stage -DestinationPath $LocalZip -Force
 
@@ -152,7 +152,7 @@ Copy-Item $LocalZip $DestZip -Force
 
 # --- 5. verify + cleanup ---------------------------------------------------- #
 Step "Verifying"
-if (-not (Test-Path (Join-Path $DestFolder "rb2traktor.exe"))) { Fail "Published exe missing on NAS!" }
+if (-not (Test-Path (Join-Path $DestFolder "DJMigrationKit.exe"))) { Fail "Published exe missing on NAS!" }
 $folderMB = [math]::Round((Get-ChildItem $DestFolder -Recurse -File | Measure-Object Length -Sum).Sum / 1MB, 1)
 $zipMB    = [math]::Round((Get-Item $DestZip).Length / 1MB, 1)
 
@@ -160,7 +160,7 @@ foreach ($d in @($Work, $Dist, (Split-Path (Split-Path $Stage -Parent) -Parent))
     if (Test-Path $d) { Remove-Item $d -Recurse -Force -ErrorAction SilentlyContinue }
 }
 
-Write-Host "`nPublished rb2traktor v$Version" -ForegroundColor Green
+Write-Host "`nPublished DJ Migration Kit v$Version" -ForegroundColor Green
 Write-Host "  Folder: $DestFolder  ($folderMB MB)"
 Write-Host "  Zip:    $DestZip  ($zipMB MB)"
-Write-Host "  Run:    $DestFolder\rb2traktor.exe"
+Write-Host "  Run:    $DestFolder\DJMigrationKit.exe"
