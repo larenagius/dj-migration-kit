@@ -156,6 +156,7 @@ class TraktorEntry:
     file_size: Optional[int] = None
     cues: list[Cue] = field(default_factory=list)
     has_beatgrid: bool = False
+    traktor_key: str = ""  # VOLUME+DIR+FILE, matches playlist PRIMARYKEY KEY
     raw: object = None
 
     @property
@@ -165,6 +166,37 @@ class TraktorEntry:
     @property
     def memory_cues(self) -> list[Cue]:
         return [c for c in self.cues if c.kind is CueKind.MEMORY]
+
+
+@dataclass
+class TraktorPlaylist:
+    """A node in Traktor's PLAYLISTS tree (folder or leaf playlist).
+
+    Leaf playlists carry ``track_keys`` (Traktor VOLUME+DIR+FILE strings, matching
+    :attr:`TraktorEntry.traktor_key`); folders carry ``children``.
+    """
+
+    name: str
+    is_folder: bool = False
+    track_keys: list[str] = field(default_factory=list)
+    children: list["TraktorPlaylist"] = field(default_factory=list)
+
+
+@dataclass
+class MixxxTrack:
+    """A track already in the Mixxx library (target for cue/playlist migration).
+
+    ``mixxx_id`` is ``library.id``; cue positions are computed in stereo samples
+    using ``samplerate`` (Mixxx stores cue position = seconds * samplerate * 2).
+    """
+
+    mixxx_id: int
+    file_path: str
+    title: str = ""
+    artist: str = ""
+    duration_ms: Optional[float] = None
+    file_size: Optional[int] = None
+    samplerate: int = 44100
 
 
 # --------------------------------------------------------------------------- #
