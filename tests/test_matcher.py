@@ -1,5 +1,5 @@
-from rb2traktor.models import RbTrack, TraktorEntry
-from rb2traktor.matcher import TrackMatcher
+from djmigrationkit.models import RbTrack, TraktorEntry
+from djmigrationkit.matcher import TrackMatcher
 
 
 def _tk(path, **kw):

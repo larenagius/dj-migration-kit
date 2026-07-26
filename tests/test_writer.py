@@ -6,8 +6,8 @@ from pathlib import Path
 
 from lxml import etree
 
-from rb2traktor.matcher import TrackMatcher
-from rb2traktor.models import (
+from djmigrationkit.matcher import TrackMatcher
+from djmigrationkit.models import (
     BeatGrid,
     BeatMarker,
     Cue,
@@ -15,9 +15,9 @@ from rb2traktor.models import (
     RbTrack,
     Resolution,
 )
-from rb2traktor.sync import engine
-from rb2traktor.traktor_io.reader import TraktorCollection
-from rb2traktor.traktor_io.writer import MergeWriter, traktor_entry_key
+from djmigrationkit.sync import engine
+from djmigrationkit.traktor_io.reader import TraktorCollection
+from djmigrationkit.traktor_io.writer import MergeWriter, traktor_entry_key
 
 FIXTURE = Path(__file__).parent / "fixtures" / "collection.nml"
 

@@ -3,7 +3,7 @@
 Pure stdlib (no Qt) so both the GUI and the helper scripts can share it.
 Override via environment variables where you don't want auto-detection:
 
-    RB2T_TRAKTOR   full path to a Traktor collection.nml
+    DJMK_TRAKTOR   full path to a Traktor collection.nml
 """
 
 from __future__ import annotations
@@ -18,7 +18,7 @@ def find_traktor_collection(explicit: Optional[str] = None) -> Optional[Path]:
 
     Resolution order:
       1. ``explicit`` argument (e.g. a CLI arg), if given and it exists.
-      2. ``RB2T_TRAKTOR`` environment variable, if set and it exists.
+      2. ``DJMK_TRAKTOR`` environment variable, if set and it exists.
       3. Auto-detect the newest ``Traktor */collection.nml`` under the user's
          Documents\\Native Instruments folder.
     """
@@ -27,7 +27,7 @@ def find_traktor_collection(explicit: Optional[str] = None) -> Optional[Path]:
         if p.exists():
             return p
 
-    env = os.environ.get("RB2T_TRAKTOR")
+    env = os.environ.get("DJMK_TRAKTOR")
     if env:
         p = Path(env)
         if p.exists():

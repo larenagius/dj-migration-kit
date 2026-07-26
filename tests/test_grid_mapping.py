@@ -1,5 +1,5 @@
-from rb2traktor.models import BeatGrid, BeatMarker
-from rb2traktor.mapping import grid as grid_map
+from djmigrationkit.models import BeatGrid, BeatMarker
+from djmigrationkit.mapping import grid as grid_map
 
 
 def _grid(*triples):

@@ -30,6 +30,9 @@ jobs:
           - os: macos-14          # Intel x86_64, cross-built under Rosetta
             suffix: macos-intel    # (Intel runners queue forever, so we don't use them)
             target: x86_64
+          - os: ubuntu-22.04      # oldest supported glibc for wider compatibility
+            suffix: linux-x86_64
+            target: native
     steps:
       - uses: actions/checkout@v4
 
@@ -40,12 +43,19 @@ jobs:
         with:
           python-version: "3.12"
 
+      # PySide6 needs a few system libs present at build time on Linux.
+      - name: Install Qt runtime libs (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libegl1 libgl1 libxkbcommon0 libdbus-1-3
+
       - name: Build (native)
         if: matrix.target == 'native'
         run: |
           python -m pip install --upgrade pip
           pip install -e ".[dev]"
-          pyinstaller packaging/rb2traktor.spec --distpath dist --workpath build --noconfirm
+          pyinstaller packaging/djmigrationkit.spec --distpath dist --workpath build --noconfirm
 
       # --- x86_64 toolchain (Intel mac, via Rosetta on Apple Silicon) -------
       - name: Set up x86_64 Python (Intel target)
@@ -63,7 +73,7 @@ jobs:
           PY=/usr/local/bin/python3.12
           arch -x86_64 "$PY" -m pip install --upgrade pip
           arch -x86_64 "$PY" -m pip install -e ".[dev]"
-          arch -x86_64 "$PY" -m PyInstaller packaging/rb2traktor.spec --distpath dist --workpath build --noconfirm
+          arch -x86_64 "$PY" -m PyInstaller packaging/djmigrationkit.spec --distpath dist --workpath build --noconfirm
 
       - name: Resolve tag name
         id: tag
@@ -73,17 +83,24 @@ jobs:
       - name: Package (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
-        run: Compress-Archive -Path dist/rb2traktor -DestinationPath "rb2traktor-${{ steps.tag.outputs.name }}-${{ matrix.suffix }}.zip"
+        run: Compress-Archive -Path dist/DJMigrationKit -DestinationPath "dj-migration-kit-${{ steps.tag.outputs.name }}-${{ matrix.suffix }}.zip"
 
       - name: Package (macOS)
         if: runner.os == 'macOS'
-        run: ditto -c -k --sequesterRsrc --keepParent dist/rb2traktor.app "rb2traktor-${{ steps.tag.outputs.name }}-${{ matrix.suffix }}.zip"
+        run: ditto -c -k --sequesterRsrc --keepParent dist/DJMigrationKit.app "dj-migration-kit-${{ steps.tag.outputs.name }}-${{ matrix.suffix }}.zip"
+
+      - name: Package (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          tar -C dist -czf "dj-migration-kit-${{ steps.tag.outputs.name }}-${{ matrix.suffix }}.tar.gz" DJMigrationKit
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
           name: dist-${{ matrix.suffix }}
-          path: "*.zip"
+          path: |
+            *.zip
+            *.tar.gz
           if-no-files-found: error
 
   release:
@@ -96,11 +113,13 @@ jobs:
         with:
           path: artifacts
 
-      - name: Attach zips to the release
+      - name: Attach builds to the release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.event.inputs.tag || github.ref_name }}
-          name: rb2traktor ${{ github.event.inputs.tag || github.ref_name }}
+          name: DJ Migration Kit ${{ github.event.inputs.tag || github.ref_name }}
           generate_release_notes: true
-          files: artifacts/**/*.zip
+          files: |
+            artifacts/**/*.zip
+            artifacts/**/*.tar.gz
           fail_on_unmatched_files: true

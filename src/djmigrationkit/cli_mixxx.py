@@ -2,10 +2,10 @@
 
 Examples:
     # Dry run: report what would migrate, write nothing.
-    rb2traktor-mixxx --dry-run
+    djmigrationkit-mixxx --dry-run
 
     # Migrate cues + playlists into a safe copy (mixxxdb-merged.sqlite).
-    rb2traktor-mixxx
+    djmigrationkit-mixxx
 
 The live mixxxdb.sqlite is never modified; output is a sibling copy you swap in
 with Mixxx closed. Traktor collection and Mixxx DB are auto-detected if omitted.
@@ -22,7 +22,7 @@ from .mixxx_io.migrate import build_plan, migrate
 
 
 def main(argv=None) -> int:
-    ap = argparse.ArgumentParser(prog="rb2traktor-mixxx", description=__doc__)
+    ap = argparse.ArgumentParser(prog="djmigrationkit-mixxx", description=__doc__)
     ap.add_argument("--traktor", help="Path to Traktor collection.nml (else auto-detect)")
     ap.add_argument("--mixxx", help="Path to mixxxdb.sqlite (else auto-detect)")
     ap.add_argument("--no-memory", action="store_true", help="Skip Traktor memory cues")
@@ -32,7 +32,7 @@ def main(argv=None) -> int:
 
     traktor = find_traktor_collection(args.traktor)
     if traktor is None:
-        print("No Traktor collection.nml found. Pass --traktor or set RB2T_TRAKTOR.")
+        print("No Traktor collection.nml found. Pass --traktor or set DJMK_TRAKTOR.")
         return 2
     mixxx = args.mixxx or find_mixxx_db()
     if mixxx is None:

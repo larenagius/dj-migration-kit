@@ -1,11 +1,14 @@
-# rb2traktor
+# DJ Migration Kit
 
-[![CI](https://github.com/larenagius/rekordbox-to-traktor/actions/workflows/ci.yml/badge.svg)](https://github.com/larenagius/rekordbox-to-traktor/actions/workflows/ci.yml)
-[![Latest release](https://img.shields.io/github/v/release/larenagius/rekordbox-to-traktor)](https://github.com/larenagius/rekordbox-to-traktor/releases/latest)
+[![CI](https://github.com/larenagius/dj-migration-kit/actions/workflows/ci.yml/badge.svg)](https://github.com/larenagius/dj-migration-kit/actions/workflows/ci.yml)
+[![Latest release](https://img.shields.io/github/v/release/larenagius/dj-migration-kit)](https://github.com/larenagius/dj-migration-kit/releases/latest)
 
-One-way **Rekordbox → Traktor Pro 4** metadata merge: bring your hot cues, memory
-cues, beatgrids/BPM, and playlists from Rekordbox into Traktor — with a preview/diff
-GUI and per-track conflict resolution.
+**Keep your DJ libraries in sync.** Move hot cues, memory cues, beatgrids and
+playlists between **Traktor**, **Rekordbox** and **Mixxx** — pick your primary
+tool, choose which others to sync to, and go.
+
+Your live libraries are **never modified**: every run writes a separate merge file
+you swap in yourself, so a bad sync can't break years of DJ prep.
 
 ## Note from Laren
 As a DJ I have relied on Traktor for many years and this became my mian library and setup, however over the years, rekordox became the go to standard for clubs, hence I ended with two seperate librarys, the club and the home one. The problem with that was that the rekordbox collection was always a bit ahead as it had the cuepoint that have been capture while playing live and if I wanted to recreate these, it always ended being a manual process that I never ended doing. So thanks to Claude Code, I was able to build a lightweight app that can read the rekordbox library, and move playlists, cues, beatgrid metadata over to traktor. 
@@ -46,9 +49,9 @@ manually after reviewing. A bad merge can never break your live library.
 
 ## Download (no Python needed)
 
-Grab the latest **`rb2traktor-<version>.zip`** from the
+Grab the latest **`djmigrationkit-<version>.zip`** from the
 [**Releases page**](https://github.com/larenagius/rekordbox-to-traktor/releases/latest),
-unzip it anywhere, and double-click `rb2traktor.exe`.
+unzip it anywhere, and double-click `djmigrationkit.exe`.
 
 Keep the whole folder together — the `.exe` loads its `_internal\` siblings.
 Windows only for now; ~170 MB unzipped, and the first launch can take a few
@@ -66,11 +69,11 @@ Requires Python 3.10–3.14.
 ## Use — GUI (recommended)
 
 ```bash
-.venv\Scripts\python -m rb2traktor.gui.app
+.venv\Scripts\python -m djmigrationkit.gui.app
 ```
 
 > Build the standalone `.exe` yourself with:
-> `pyinstaller packaging/rb2traktor.spec --distpath <out> --workpath <tmp> --noconfirm`
+> `pyinstaller packaging/djmigrationkit.spec --distpath <out> --workpath <tmp> --noconfirm`
 > (build to a **local disk** path, not a network share, to avoid file-lock errors).
 
 1. The Traktor `collection.nml` is auto-detected (newest `Traktor */collection.nml`).
@@ -86,13 +89,13 @@ Requires Python 3.10–3.14.
 
 ```bash
 # Dry run: report only, write nothing
-rb2traktor --traktor "C:/Users/you/Documents/Native Instruments/Traktor 4.5.0/collection.nml" --dry-run
+djmigrationkit --traktor "C:/Users/you/Documents/Native Instruments/Traktor 4.5.0/collection.nml" --dry-run
 
 # Write collection-merge.nml (Rekordbox wins on conflicts; grids included)
-rb2traktor --traktor ".../collection.nml" --conflict rb_wins
+djmigrationkit --traktor ".../collection.nml" --conflict rb_wins
 
 # From an exported XML instead of master.db, and without touching grids
-rb2traktor --traktor ".../collection.nml" --rb-xml export.xml --no-grids
+djmigrationkit --traktor ".../collection.nml" --rb-xml export.xml --no-grids
 ```
 
 ## Swapping the merge in
@@ -112,12 +115,12 @@ touched.
 
 ```bash
 # Dry run: report what would migrate, write nothing
-rb2traktor-mixxx --dry-run
+djmigrationkit-mixxx --dry-run
 
 # Migrate into a copy (mixxxdb-merged.sqlite next to your live DB)
-rb2traktor-mixxx                     # auto-detects Traktor collection + Mixxx DB
-rb2traktor-mixxx --no-memory         # skip Traktor memory cues
-rb2traktor-mixxx --no-playlists      # cues only
+djmigrationkit-mixxx                     # auto-detects Traktor collection + Mixxx DB
+djmigrationkit-mixxx --no-memory         # skip Traktor memory cues
+djmigrationkit-mixxx --no-playlists      # cues only
 ```
 
 First **add your music to Mixxx** (so tracks exist to attach cues to). Then, to
@@ -134,7 +137,7 @@ RB master.db / xml ─┐
 Traktor collection ─┘                                                   (live file read-only)
 ```
 
-Layers (in `src/rb2traktor/`): `rb_reader/` (db, xml) · `traktor_io/` (reader,
+Layers (in `src/djmigrationkit/`): `rb_reader/` (db, xml) · `traktor_io/` (reader,
 writer, `safe_output`) · `matcher/` · `mapping/` (cues, grid, colors, playlists) ·
 `sync/` (engine, conflicts) · `gui/`.
 
@@ -151,7 +154,7 @@ path named `collection.nml` (`safe_output.assert_not_live`).
 ## Scope
 
 - **Rekordbox → Traktor:** hot/memory cues, beatgrids/BPM, playlists (GUI + CLI).
-- **Traktor → Mixxx:** hot cues (+ memory cues) and playlists (CLI: `rb2traktor-mixxx`).
+- **Traktor → Mixxx:** hot cues (+ memory cues) and playlists (CLI: `djmigrationkit-mixxx`).
 - Out: loops, ratings/key/comments, writing back to Rekordbox, Mixxx beatgrids,
   adding new tracks (unmatched tracks are reported, not inserted), auto-sync daemon.
 
