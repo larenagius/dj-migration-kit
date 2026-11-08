@@ -33,6 +33,10 @@ def _rb_url_to_path(loc: str) -> str:
         if p.startswith(prefix):
             p = p[len(prefix) :]
             break
+    # Windows paths start with a drive ("C:/..."); anything else is POSIX
+    # (macOS /Volumes/..., Linux /home/...) and needs its leading slash back.
+    if p and not (len(p) > 1 and p[1] == ":") and not p.startswith("/"):
+        p = "/" + p
     return p
 
 
