@@ -115,12 +115,12 @@ touched.
 
 ```bash
 # Dry run: report what would migrate, write nothing
-djmigrationkit-mixxx --dry-run
+djmk-traktor-to-mixxx --dry-run
 
 # Migrate into a copy (mixxxdb-merged.sqlite next to your live DB)
-djmigrationkit-mixxx                     # auto-detects Traktor collection + Mixxx DB
-djmigrationkit-mixxx --no-memory         # skip Traktor memory cues
-djmigrationkit-mixxx --no-playlists      # cues only
+djmk-traktor-to-mixxx                     # auto-detects Traktor collection + Mixxx DB
+djmk-traktor-to-mixxx --no-memory         # skip Traktor memory cues
+djmk-traktor-to-mixxx --no-playlists      # cues only
 ```
 
 First **add your music to Mixxx** (so tracks exist to attach cues to). Then, to
@@ -128,6 +128,43 @@ apply: **close Mixxx**, back up `mixxxdb.sqlite`, and rename the merge file over
 it. Notes: Traktor hot cues become Mixxx hotcues (memory cues fill spare slots);
 beatgrids aren't migrated (Mixxx uses a different mechanism); positions use
 Mixxx's exact `seconds × samplerate × 2` sample convention.
+
+## Also: Mixxx → Rekordbox XML (for Pioneer CDJ USBs)
+
+DJ on Mixxx (e.g. on Linux) but play gigs on CDJs? Export your Mixxx hot cues and
+playlists to a `rekordbox.xml`, open it in Rekordbox on any Mac/Windows machine,
+and export your USB from there as usual. Your Mixxx database is only **read**; the
+XML is always a new file (default `mixxx-to-rekordbox.xml` on your Desktop), and
+the tool refuses to write a file called `rekordbox.xml` or overwrite anything.
+
+```bash
+djmk-mixxx-to-rekordbox --dry-run         # preview counts, write nothing
+djmk-mixxx-to-rekordbox                   # write ~/Desktop/mixxx-to-rekordbox.xml
+
+# Music on a NAS mounted at /mnt/nas on Linux, but at /Volumes/music on the Mac
+# that runs Rekordbox: rewrite the paths so Rekordbox can find the files
+djmk-mixxx-to-rekordbox --map-path "/mnt/nas=/Volumes/music"
+```
+
+What maps to what:
+
+| Mixxx | Rekordbox / CDJ |
+|---|---|
+| hot cue on pad 1–8 | hot cue A–H (same slot, colour, label) |
+| hot cue on pad 9–36 | memory cue (CDJs have 8 hot cues — nothing is dropped) |
+| saved loop on pad 1–8 / elsewhere | hot loop A–H / memory loop |
+| main cue | memory cue |
+| playlists named `Folder / Playlist` | real folders (use `--flat` to keep names as-is) |
+| crates | playlists in a `Mixxx Crates` folder |
+| beatgrid | **not exported** — Rekordbox analyses on import (Mixxx grids taken from BPM tags often start at 0 s and would be off-phase) |
+
+Add `--hot-as-memory` to also drop a memory cue at every hot cue (handy on older
+players that only show memory cues on the waveform).
+
+In Rekordbox: *Preferences → Advanced → Database → rekordbox xml → Imported
+Library* → pick the file; enable *rekordbox xml* under *Preferences → View →
+Layout*; then in the sidebar right-click a playlist/folder → *Import Playlist*.
+**Spot-check a few tracks' cues before a gig.**
 
 ## How it works
 
@@ -154,7 +191,8 @@ path named `collection.nml` (`safe_output.assert_not_live`).
 ## Scope
 
 - **Rekordbox → Traktor:** hot/memory cues, beatgrids/BPM, playlists (GUI + CLI).
-- **Traktor → Mixxx:** hot cues (+ memory cues) and playlists (CLI: `djmigrationkit-mixxx`).
+- **Traktor → Mixxx:** hot cues (+ memory cues) and playlists (CLI: `djmk-traktor-to-mixxx`).
+- **Mixxx → Rekordbox XML:** hot/memory cues, loops and playlists (CLI: `djmk-mixxx-to-rekordbox`).
 - Out: loops, ratings/key/comments, writing back to Rekordbox, Mixxx beatgrids,
   adding new tracks (unmatched tracks are reported, not inserted), auto-sync daemon.
 

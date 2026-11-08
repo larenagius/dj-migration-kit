@@ -21,6 +21,7 @@ djmk-gui = "djmigrationkit.gui.app:main"
 # direction-specific CLIs (a unified `djmk sync` lands with the sync engine)
 djmk-rb-to-traktor = "djmigrationkit.cli:main"
 djmk-traktor-to-mixxx = "djmigrationkit.cli_mixxx:main"
+djmk-mixxx-to-rekordbox = "djmigrationkit.cli_mixxx_rb:main"
 
 [build-system]
 requires = ["setuptools>=68"]
